@@ -1,12 +1,17 @@
-import './App.css'
+//import DarkModeToggle from "./components/Darkmode/DarkModeToggle"
+
+import Footer from "./components/Footer/Footer";
+import Hero from "./components/Hero/Hero";
+import Navbar from "./components/Navbar/Navbar";
 
 function App() {
-
   return (
-    <>
-      <h1 className='text-6xl font-bold text-blue-600 pt-14'>AgriNet project</h1>
-    </>
-  )
+    <div className="overflow-x-hidden">
+      <Navbar />
+      <Hero />
+      <Footer />
+    </div>
+  );
 }
 
-export default App
+export default App;
