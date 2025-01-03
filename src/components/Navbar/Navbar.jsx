@@ -11,7 +11,7 @@ const Navbar = () => {
   return (
     <>
       <nav>
-        <div className="container flex items-center justify-between bg-emerald-200">
+        <div className="container flex items-center justify-between bg-emerald-200 ">
           {/* logo section */}
           <div className="flex items-center gap-2 py-8 font-bold">
             <img src={logo} alt="AgriNet Logo" className=" max-w-12" />
