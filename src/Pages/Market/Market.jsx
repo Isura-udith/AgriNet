@@ -1,92 +1,129 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import { useCart } from "../Cart/CartContext";
-
-const products = Array.from({ length: 50 }, (_, i) => ({
-  id: i + 1,
-  name: `Product ${i + 1}`,
-  price: Math.floor(Math.random() * 100) + 1,
-  rating: (Math.random() * 5).toFixed(1), // Rating as string
-  sellers: `${Math.floor(Math.random() * 2000)} times`,
-  category: i % 2 === 0 ? "Wholesale" : "Retail",
-  image: `https://via.placeholder.com/150?text=Product+${i + 1}`,
-}));
+import { Link } from "react-router-dom";
 
 const Market = () => {
-  const { dispatch, cart } = useCart();
-  const navigate = useNavigate();
+  const { cart, dispatch } = useCart();
 
-  const [filteredProducts, setFilteredProducts] = useState(products);
-  const [priceRange, setPriceRange] = useState([0, 100]);
-  const [selectedRatings, setSelectedRatings] = useState([]); // Ratings as an array
+  const [products, setProducts] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [priceRange, setPriceRange] = useState([0, 500]);
+  const [selectedRatings, setSelectedRatings] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [category, setCategory] = useState("All");
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [sortOrder, setSortOrder] = useState("none");
 
-  // Filter products based on filters
+  // Fetch products from the backend
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/api/products");
+        setProducts(response.data);
+        setFilteredProducts(response.data);
+      } catch (err) {
+        console.error("Error fetching products:", err);
+        setError("Failed to fetch products. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  // Apply filters whenever dependencies change
   useEffect(() => {
     let filtered = products.filter((product) => {
-      const isInPriceRange = product.price >= priceRange[0] && product.price <= priceRange[1];
+      const isInPriceRange =
+        product.productPrice >= priceRange[0] && product.productPrice <= priceRange[1];
       const isInCategory = category === "All" || product.category === category;
-      const matchesSearchQuery = product.name.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesSearchQuery = product.productName
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase());
 
-      // Ensure rating is compared as a number
-      let isInRatingRange = false;
-      if (selectedRatings.length === 0) {
-        isInRatingRange = true; // No rating filter selected
-      } else {
-        const productRating = parseFloat(product.rating); // Convert rating to number
-        isInRatingRange = selectedRatings.some((rating) => productRating >= rating && productRating < rating + 1);
-      }
+      const isInRatingRange =
+        selectedRatings.length === 0 ||
+        selectedRatings.some((rating) => {
+          const productRating = parseFloat(product.rating || 0);
+          return productRating >= rating && productRating < rating + 1;
+        });
 
       return isInPriceRange && isInCategory && matchesSearchQuery && isInRatingRange;
     });
 
-    // Sorting products based on the selected sort order
+    // Sorting logic
     if (sortOrder === "low-to-high") {
-      filtered = filtered.sort((a, b) => a.price - b.price);
+      filtered = filtered.sort((a, b) => a.productPrice - b.productPrice);
     } else if (sortOrder === "high-to-low") {
-      filtered = filtered.sort((a, b) => b.price - a.price);
+      filtered = filtered.sort((a, b) => b.productPrice - a.productPrice);
     }
 
     setFilteredProducts(filtered);
-  }, [priceRange, selectedRatings, searchQuery, category, sortOrder]);
+  }, [products, priceRange, selectedRatings, searchQuery, category, sortOrder]);
+
+  // const addToCart = (product) => {
+  //   if (product.quantity > 0) {
+  //     dispatch({ type: "ADD_TO_CART", payload: product });
+  //     setShowConfirmation(true);
+  //     setTimeout(() => setShowConfirmation(false), 3000);
+  //   } else {
+  //     alert("Sorry, this product is out of stock.");
+  //   }
+  // };
+
 
   const addToCart = (product) => {
-    dispatch({ type: "ADD_TO_CART", payload: product });
-    setShowConfirmation(true);
-    setTimeout(() => setShowConfirmation(false), 3000); // Hide confirmation after 3 seconds
+    if (product.quantity > 0) {
+      const productToAdd = {
+        id: product._id,
+        name: product.productName,
+        price: product.productPrice,
+        quantity: 1, // Initialize quantity to 1 for new items
+        image: `http://localhost:5000${product.imagePath}`,
+        selected: false, // Initially unselected
+      };
+      dispatch({ type: "ADD_TO_CART", payload: productToAdd });
+      setShowConfirmation(true);
+      setTimeout(() => setShowConfirmation(false), 3000);
+    } else {
+      alert("Sorry, this product is out of stock.");
+    }
   };
-
-  const goToCartPage = () => {
-    navigate("/cart");
-  };
-
-  const clearFilters = () => {
-    setSearchQuery("");
-    setPriceRange([0, 100]);
-    setSelectedRatings([]);
-    setCategory("All");
-    setSortOrder("none");
-  };
+  
 
   const getCartItemCount = () => {
     return cart.reduce((total, item) => total + item.quantity, 0);
   };
 
+  const clearFilters = () => {
+    setSearchQuery("");
+    setPriceRange([0, 500]);
+    setSelectedRatings([]);
+    setCategory("All");
+    setSortOrder("none");
+  };
+
+  if (loading) {
+    return <p className="text-center">Loading products...</p>;
+  }
+
+  if (error) {
+    return <p className="text-center text-red-500">{error}</p>;
+  }
+
   return (
     <div className="container flex p-4 mx-auto bg-gray-100">
-      {/* Confirmation message */}
       {showConfirmation && (
-        <div className="fixed px-4 py-2 text-white bg-gray-600 rounded-md shadow-lg top-28 right-4">
+        <div className="fixed px-4 py-2 text-white bg-gray-600 rounded-md shadow-lg top-28 right-[40%]">
           Item added to cart successfully!
         </div>
       )}
 
-      {/* Sidebar (Fixed with sticky positioning) */}
-      <div className="p-4 bg-gray-300 rounded-md shadow-md w-[20%] sticky top-0 pt-6">
-        {/* Search Bar */}
+      <div className="p-4 bg-gray-400 rounded-md shadow-md w-[20%] sticky top-0 pt-6">
         <input
           type="text"
           value={searchQuery}
@@ -95,9 +132,8 @@ const Market = () => {
           className="w-full p-2 mb-4 border rounded-md"
         />
 
-        {/* Sort Price Filter - Radio buttons (Low to High, High to Low) */}
         <div className="mb-4">
-          <p className="mb-2 font-medium text-gray-600">Sort by Price</p>
+          <p className="mb-2 font-medium text-gray-700">Sort by Price</p>
           <div className="flex flex-wrap">
             <label className="inline-flex items-center w-1/2 mr-4">
               <input
@@ -124,7 +160,6 @@ const Market = () => {
           </div>
         </div>
 
-        {/* Price Range */}
         <div className="mb-4">
           <label htmlFor="priceRange" className="block mb-2">
             Price Range
@@ -133,26 +168,24 @@ const Market = () => {
             type="range"
             id="priceRange"
             min="0"
-            max="100"
+            max="500"
             value={priceRange[1]}
             onChange={(e) => setPriceRange([0, e.target.value])}
             className="w-full"
           />
           <div className="flex justify-between">
-            <span>${priceRange[0]}</span>
-            <span>${priceRange[1]}</span>
+            <span>Rs. {priceRange[0]}</span>
+            <span>Rs. {priceRange[1]}</span>
           </div>
         </div>
 
-        {/* Rating Filter - Multiple checkboxes */}
         <div className="mb-4">
-          <p className="mb-2 font-medium text-gray-600">Select Ratings</p>
+          <p className="mb-2 font-medium text-gray-700">Select Ratings</p>
           <div className="flex flex-wrap">
             {[1, 2, 3, 4, 5].map((star) => (
               <label key={star} className="inline-flex items-center w-1/2 mr-4">
                 <input
                   type="checkbox"
-                  name="rating"
                   value={star}
                   checked={selectedRatings.includes(star)}
                   onChange={() => {
@@ -170,11 +203,10 @@ const Market = () => {
           </div>
         </div>
 
-        {/* Category Filter - Radio buttons (All, Wholesale, Retail) */}
         <div className="mb-4">
-          <p className="mb-2 font-medium text-gray-600">Category</p>
+          <p className="mb-2 font-medium text-gray-700">Category</p>
           <div className="flex flex-wrap">
-            {["All", "Wholesale", "Retail"].map((cat) => (
+            {["Both", "Wholesale", "Retail"].map((cat) => (
               <label key={cat} className="inline-flex items-center w-1/2 mr-4">
                 <input
                   type="radio"
@@ -190,7 +222,6 @@ const Market = () => {
           </div>
         </div>
 
-        {/* Clear Filters Button */}
         <button
           onClick={clearFilters}
           className="w-full py-2 mt-4 text-white bg-red-600 rounded-md hover:bg-red-700"
@@ -199,39 +230,38 @@ const Market = () => {
         </button>
       </div>
 
-      {/* Product Grid (Scrollable section) */}
       <div className="w-3/4 p-4 overflow-y-auto h-[80vh]">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
           {filteredProducts.map((product) => (
             <div
-              key={product.id}
-              className="p-4 border rounded-md shadow-sm hover:shadow-md"
-            >
+              key={product._id}            
+              className="p-4 bg-gray-200 border border-gray-300 rounded-md shadow-sm hover:shadow-md hover:bg-white">
               <img
-                src={product.image}
-                alt={product.name}
-                className="object-cover w-full h-32 rounded-md"
+                src={`http://localhost:5000${product.imagePath}`}
+                alt={product.productName}
+                className="w-full h-32 transition-transform duration-700 ease-in-out transform rounded-lg hover:scale-150"
               />
-              <h3 className="mt-2 text-lg font-semibold">{product.name}</h3>
-              <p className="text-gray-600">${product.price}</p>
-              <div className="flex items-center justify-between mt-2">
-                <p className="text-sm text-gray-500">⭐ {product.rating}</p>
-                <p className="text-sm text-gray-500">{product.sellers}</p>
+              <h3 className="mt-2 font-mono text-lg font-bold text-center text-gray-700">{product.productName}</h3>
+              <div className="flex items-center justify-between mt-2 ">
+                <p className="text-gray-600">Rs. {product.productPrice}</p>
+                <p className="text-sm text-gray-500">Qty: {product.quantity}Kg</p>
+              </div>
+              <div className="flex items-center justify-between mt-2 ">
+                <p className="text-sm text-gray-500">{product.sellerName}</p>
+                <p className="text-sm text-gray-500">{product.rating}5.0 ⭐</p>
               </div>
               <button
                 onClick={() => addToCart(product)}
-                className="w-full py-1 mt-2 text-white rounded-md bg-emerald-600 hover:bg-emerald-700"
-              >
+                className="w-full px-4 py-2 mt-2 font-semibold text-white rounded-md bg-emerald-600 hover:bg-emerald-700">
                 Add to Cart
               </button>
             </div>
           ))}
         </div>
       </div>
-
       {/* Cart Button */}
-      <button
-        onClick={goToCartPage}
+      <Link
+        to="/cart"
         className="fixed inline-flex px-4 py-4 mt-3 font-bold tracking-wide text-white bg-black rounded-full animate-bounce focus:animate-none hover:animate-none text-md bottom-4 right-4 hover:bg-red-800"
       >
         🛒 Go to Cart
@@ -240,7 +270,7 @@ const Market = () => {
             {getCartItemCount()}
           </span>
         )}
-      </button>
+      </Link>
     </div>
   );
 };

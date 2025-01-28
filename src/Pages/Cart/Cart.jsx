@@ -1,7 +1,31 @@
 import { useCart } from "./CartContext";
+import { useState } from "react";
+//import axios from 'axios';
+import AlertPopup from "../../components/AlertPopup/AlertPopup";
 
 const Cart = () => {
   const { cart, dispatch } = useCart();
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [step, setStep] = useState(1);
+  const [receiverDetails, setReceiverDetails] = useState({
+    email: "",
+    name: "",
+    addressLine1: "",
+    addressLine2: "",
+    addressLine3: "",
+    zipCode: "",
+  });
+  const [cardDetails, setCardDetails] = useState({
+    cardNumber: "",
+    holderName: "",
+    cvv: "",
+  });
+
+  const [alert, setAlert] = useState({
+    message: '',
+    type: '', // "success" or "error"
+    isVisible: false,
+  });
 
   // Toggle item selection
   const toggleSelectItem = (id) => {
@@ -56,8 +80,71 @@ const Cart = () => {
   );
   const selectedCount = selectedItems.length;
 
+  const handlePayNow = () => {
+    setIsPopupOpen(true);
+    setStep(1);
+  };
+
+  const handleReceiverChange = (e) => {
+    setReceiverDetails({ ...receiverDetails, [e.target.name]: e.target.value });
+  };
+
+  const handleCardChange = (e) => {
+    setCardDetails({ ...cardDetails, [e.target.name]: e.target.value });
+  };
+
+  const handleNext = () => {
+    setStep(2);
+  };
+
+  const handlePayment = () => {
+    console.log("Receiver Details:", receiverDetails);
+    console.log("Card Details:", cardDetails);
+    setIsPopupOpen(false);
+    setAlert({
+      message: 'Payment Successful!',
+      type: 'success',
+      isVisible: true,
+    });
+
+    window.location.reload(); // Refresh the page
+  };
+
+  // const handlePayment = async () => {
+  //   const paymentData = {
+  //     receiverDetails,
+  //     cardDetails,
+      
+  //   };
+  
+  //   try {
+  //     const response = await axios.post('/api/payment', paymentData);
+  //     console.log(response.data.message); // Show success message
+  //     setIsPopupOpen(false);
+  //     setAlert({
+  //       message: 'Payment Successful!',
+  //       type: 'success',
+  //       isVisible: true,
+  //     });
+  //   } catch (error) {
+  //     console.error('Payment failed:', error);
+  //     setAlert({
+  //       message: 'Payment Failed! Please try again.',
+  //       type: 'error',
+  //       isVisible: true,
+  //     });
+  //   }
+  // };
+
   return (
     <div className="p-6 pb-8 m-6 bg-gray-400 rounded-md shadow-md">
+      {/* Alert Popup */}
+            <AlertPopup
+              message={alert.message}
+              type={alert.type}
+              isVisible={alert.isVisible}
+              onClose={() => setAlert({ ...alert, isVisible: false })}
+            />
       {cart.length === 0 ? (
         <p className="font-bold text-center text-red-700">
           Your cart is empty.
@@ -88,7 +175,7 @@ const Cart = () => {
                   <th className="px-4 py-2 border">Image</th>
                   <th className="px-4 py-2 border">Product Name</th>
                   <th className="px-4 py-2 border">Price</th>
-                  <th className="px-4 py-2 border">Quantity</th>
+                  <th className="px-4 py-2 border">Quantity (Kg)</th>
                   <th className="px-4 py-2 border">Actions</th>
                 </tr>
               </thead>
@@ -102,7 +189,7 @@ const Cart = () => {
                         onChange={() => toggleSelectItem(item.id)}
                       />
                     </td>
-                    <td className="items-center justify-center px-4 py-2 text-center border">
+                    <td className="flex items-center justify-center px-4 py-2 text-center border">
                       <img
                         src={item.image}
                         alt={item.name}
@@ -113,22 +200,46 @@ const Cart = () => {
                       {item.name}
                     </td>
                     <td className="px-4 py-2 text-center border">
-                      ${item.price}
+                      Rs. {item.price}
                     </td>
                     <td className="px-4 py-2 text-center border">
-                      <div className="flex items-center justify-center space-x-2">
+                      <div className="flex items-center justify-center space-x-4">
                         <button
                           onClick={() => incrementQuantity(item.id)}
-                          className="px-2 py-1 text-white transition bg-blue-500 rounded hover:bg-blue-600"
+                          className="flex items-center justify-center w-6 h-6 text-white transition-all transform bg-gray-500 rounded-full hover:bg-black hover:scale-110"
                         >
-                          +
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="w-5 h-5"
+                          >
+                            <path d="M12 5v14M5 12h14"></path>
+                          </svg>
                         </button>
-                        <span>{item.quantity}</span>
+                        <span className="text-lg font-semibold">
+                          {item.quantity}
+                        </span>
                         <button
                           onClick={() => decrementQuantity(item.id)}
-                          className="px-2 py-1 text-white transition bg-blue-500 rounded hover:bg-blue-600"
+                          className="flex items-center justify-center w-6 h-6 text-white transition-all transform bg-gray-500 rounded-full hover:bg-black hover:scale-110"
                         >
-                          -
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="w-5 h-5"
+                          >
+                            <path d="M19 12H5"></path>
+                          </svg>
                         </button>
                       </div>
                     </td>
@@ -163,20 +274,141 @@ const Cart = () => {
           {/* Total Price */}
           <div className="mt-6 text-right">
             <p className="font-semibold text-gray-700 text-mediam">
-              Total Price for All Items: ${totalPrice.toFixed(2)}
+              Total Price for All Items: Rs. {totalPrice.toFixed(2)}
             </p>
             {selectedCount > 0 && (
               <p className="mt-2 text-xl font-semibold text-emerald-950">
-                Total Price for Selected Items: ${selectedTotalPrice.toFixed(2)}
+                Total Price for Selected Items: Rs.
+                {selectedTotalPrice.toFixed(2)}
               </p>
             )}
             <div className="mt-4">
-              <button className="px-6 py-3 font-bold text-white bg-black rounded-full hover:bg-green-600">
+              <button
+                onClick={handlePayNow}
+                className="px-6 py-3 font-bold text-white bg-black rounded-full hover:bg-green-600"
+              >
                 Pay Now
               </button>
             </div>
           </div>
         </>
+      )}
+
+      {isPopupOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="p-6 bg-white rounded-lg shadow-lg w-96">
+            {step === 1 ? (
+              <div>
+                <h2 className="mb-4 text-xl font-bold">Receiver Details</h2>
+                <div className="mb-4">
+                  
+                  <input
+                    type="email"
+                    name="email"
+                    value={receiverDetails.email}
+                    onChange={handleReceiverChange}
+                    className="w-full px-3 py-2 border rounded"
+                    placeholder="Email"
+                  />
+                </div>
+                <div className="mb-4">
+      
+                  <input
+                    type="text"
+                    name="name"
+                    value={receiverDetails.name}
+                    onChange={handleReceiverChange}
+                    className="w-full px-3 py-2 border rounded"
+                    placeholder="Receiver Name"
+                  />
+                </div>
+                <div className="mb-4">
+       
+                  <input
+                    type="text"
+                    name="addressLine1"
+                    value={receiverDetails.addressLine1}
+                    onChange={handleReceiverChange}
+                    className="w-full px-3 py-2 border rounded"
+                    placeholder="Address Line 1"
+                  />
+                </div>
+                <div className="mb-4">
+                
+                  <input
+                    type="text"
+                    name="addressLine2"
+                    value={receiverDetails.addressLine2}
+                    onChange={handleReceiverChange}
+                    className="w-full px-3 py-2 border rounded"
+                    placeholder="Address Line 2"
+                  />
+                </div>
+                
+                <div className="mb-4">
+                  
+                  <input
+                    type="text"
+                    name="zipCode"
+                    value={receiverDetails.zipCode}
+                    onChange={handleReceiverChange}
+                    className="w-full px-3 py-2 border rounded"
+                    placeholder="Zip Code"
+                  />
+                </div>
+                <button
+                  onClick={handleNext}
+                  className="items-center px-6 py-2 font-bold text-white bg-blue-600 rounded hover:bg-blue-700"
+                >
+                  Next
+                </button>
+              </div>
+            ) : (
+              <div>
+                <h2 className="mb-4 text-xl font-bold">Card Details</h2>
+                <div className="mb-4">
+                  <label className="block mb-2 font-semibold">Card Number:</label>
+                  <input
+                    type="text"
+                    name="cardNumber"
+                    value={cardDetails.cardNumber}
+                    onChange={handleCardChange}
+                    className="w-full px-3 py-2 border rounded"
+                  />
+                </div>
+                <div className="mb-4">
+                  <label className="block mb-2 font-semibold">Holder Name:</label>
+                  <input
+                    type="text"
+                    name="holderName"
+                    value={cardDetails.holderName}
+                    onChange={handleCardChange}
+                    className="w-full px-3 py-2 border rounded"
+                  />
+                </div>
+                <div className="mb-4">
+                  <label className="block mb-2 font-semibold">CVV:</label>
+                  <input
+                    type="text"
+                    name="cvv"
+                    value={cardDetails.cvv}
+                    onChange={handleCardChange}
+                    className="w-full px-3 py-2 border rounded"
+                  />
+                </div>
+                
+                <div className="items-center justify-center">
+                <button
+                  onClick={handlePayment}
+                  className="px-4 py-2 font-bold text-white bg-green-600 rounded hover:bg-green-700">
+                  Pay Rs. {selectedTotalPrice.toFixed(2)}
+                </button>
+         
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
       )}
     </div>
   );

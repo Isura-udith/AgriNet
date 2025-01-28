@@ -27,7 +27,7 @@ const Hero = () => {
             </p>
             <div>
               <a
-                href="#"
+                href="/market"
                 className="inline-flex px-4 py-2 mt-3 font-medium tracking-wide text-white rounded-lg bg-emerald-600 animate-bounce focus:animate-none hover:animate-none text-md"
               >
                 <span className="pt-1">
