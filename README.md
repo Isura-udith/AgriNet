@@ -29,7 +29,7 @@ To run the project locally:
 1. Clone the repository:
 
 ```bash
-[[git clone https://github.com/yourusername/agrinet-ecommerce.git]](https://github.com/Isura-udith/AgriNet.git)
+git clone https://github.com/yourusername/agrinet-ecommerce.git
 ```
 
 2. Navigate to the project folder:
