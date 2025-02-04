@@ -29,13 +29,13 @@ To run the project locally:
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/yourusername/agrinet-ecommerce.git
+[https://github.com/Isura-udith/AgriNet.git]
 ```
 
 2. Navigate to the project folder:
 
 ```bash
-cd agrinet-ecommerce
+cd AgriNet
 ```
 
 3. Install the necessary dependencies:
