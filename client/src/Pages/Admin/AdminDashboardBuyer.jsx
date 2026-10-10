@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import AlertPopup from "../../components/AlertPopup/AlertPopup";
+import { API_BASE_URL } from "../../config/api";
 
 const BuyerDashboard = () => {
   const [users, setUsers] = useState([]);
@@ -18,7 +19,7 @@ const BuyerDashboard = () => {
     const fetchBuyers = async () => {
       try {
         const response = await fetch(
-          "http://localhost:5000/api/users?role=buyer"
+          `${API_BASE_URL}/api/users?role=buyer`
         );
         if (!response.ok) {
           throw new Error("Failed to fetch buyers");
@@ -45,7 +46,7 @@ const BuyerDashboard = () => {
   const handleSave = async () => {
     try {
       const response = await fetch(
-        `http://localhost:5000/api/users/${editUser._id}`,
+        `${API_BASE_URL}/api/users/${editUser._id}`,
         {
           method: "PUT",
           headers: {
@@ -83,7 +84,7 @@ const BuyerDashboard = () => {
   // Delete user by ID
   const deleteUser = async (id) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/users/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/users/${id}`, {
         method: "DELETE",
       });
       if (!response.ok) {

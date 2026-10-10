@@ -17,19 +17,7 @@ export const COMPANY = [
   { name: "About us", link: "about" },
   { name: "Press", link: "/" },
   { name: "Customer Stories", link: "contact" },
-  {
-    name: "Admin",
-    link: "/admin",
-    onClick: (e) => {
-      e.preventDefault(); // Prevent default navigation behavior
-      const password = prompt("Enter password:");
-      if (password === "123") {
-        window.location.href = "/admin"; // Navigate to admin page
-      } else {
-        alert("Incorrect password!");
-      }
-    },
-  },
+  { name: "Admin", link: "/admin" },
 ];
 
 export const SUPPORT = [

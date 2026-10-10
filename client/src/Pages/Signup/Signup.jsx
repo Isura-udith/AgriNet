@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import AlertPopup from '../../components/AlertPopup/AlertPopup';
 import bg5 from '../../assets/website/bg5.jpg';
+import { API_BASE_URL } from '../../config/api';
 
 const Signup = () => {
   const [isSeller, setIsSeller] = useState(false);
@@ -72,7 +73,7 @@ const Signup = () => {
     };
 
     try {
-      const response = await fetch('http://localhost:5000/api/users/register', {
+      const response = await fetch(`${API_BASE_URL}/api/users/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(userData),

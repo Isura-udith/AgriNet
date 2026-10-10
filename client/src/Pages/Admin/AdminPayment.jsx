@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import AlertPopup from "../../components/AlertPopup/AlertPopup";
+import { API_BASE_URL } from "../../config/api";
 
 const BuyerDashboard = () => {
   const [users, setUsers] = useState([]);
@@ -18,7 +19,7 @@ const BuyerDashboard = () => {
     const fetchBuyers = async () => {
       try {
         const response = await fetch(
-          "http://localhost:5000/api/users?role=buyer"
+          `${API_BASE_URL}/api/users?role=buyer`
         );
         if (!response.ok) {
           throw new Error("Failed to fetch buyers");
@@ -40,7 +41,7 @@ const BuyerDashboard = () => {
   const handleSave = async () => {
     try {
       const response = await fetch(
-        `http://localhost:5000/api/users/${editUser._id}`,
+        `${API_BASE_URL}/api/users/${editUser._id}`,
         {
           method: "PUT",
           headers: {
@@ -78,7 +79,7 @@ const BuyerDashboard = () => {
   // Delete user by ID
   const deleteUser = async (id) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/users/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/users/${id}`, {
         method: "DELETE",
       });
       if (!response.ok) {
@@ -137,10 +138,10 @@ const BuyerDashboard = () => {
               key={user._id}
               className="transition duration-200 border-b hover:bg-gray-50"
             >
-              <td className="px-4 py-2">Isura</td>
-              <td className="px-4 py-2">isura@gmail.com</td>
-                <td className="px-4 py-2 text-center">Passara, Badulla</td>
-                <td className="px-4 py-2 text-center">10500</td>
+              <td className="px-4 py-2">{user.name}</td>
+              <td className="px-4 py-2">{user.email}</td>
+              <td className="px-4 py-2 text-center">{user.address || "N/A"}</td>
+              <td className="px-4 py-2 text-center">{user.province || "N/A"}</td>
               <td className="flex px-4 py-2 space-x-2">
                 
                 <button

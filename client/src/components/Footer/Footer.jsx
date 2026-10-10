@@ -37,10 +37,10 @@ const SUPPORT = [
 ];
 
 const socialIcons = [
-  { name: "Facebook", icon: FaFacebook, link: "https://www.facebook.com/isura.udith?mibextid=ZbWKwL" },
+  { name: "Facebook", icon: FaFacebook, link: "https://www.facebook.com/" },
   { name: "Twitter", icon: FaTwitter, link: "https://twitter.com/" },
-  { name: "Github", icon: FaGithub, link: "https://github.com/Isura-udith" },
-  { name: "LinkedIn", icon: FaLinkedin, link: "https://github.com/Isura-udith" },
+  { name: "Github", icon: FaGithub, link: "https://github.com/" },
+  { name: "LinkedIn", icon: FaLinkedin, link: "https://www.linkedin.com/" },
   { name: "Instagram", icon: FaInstagram, link: "https://www.instagram.com/" },
 ];
 
@@ -106,7 +106,8 @@ const Footer = () => {
   };
 
   const handlePasswordSubmit = () => {
-    if (password === "123") {
+    const adminCode = import.meta.env.VITE_ADMIN_ACCESS_CODE || "admin";
+    if (password === adminCode) {
       setShowPopup(false);
       navigate("/admin"); // Navigate to admin page
     } else {

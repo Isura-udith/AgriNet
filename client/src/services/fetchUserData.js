@@ -1,5 +1,7 @@
+import { API_BASE_URL } from '../config/api';
+
 export const fetchUserData = async (userId, token) => {
-  const response = await fetch(`http://localhost:5000/api/users/${userId}`, {
+  const response = await fetch(`${API_BASE_URL}/api/users/${userId}`, {
     method: 'GET',
     headers: {
       Authorization: `Bearer ${token}`,

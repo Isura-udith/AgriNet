@@ -1,7 +1,8 @@
 import { useCart } from "./CartContext";
 import { useState } from "react";
-//import axios from 'axios';
+import axios from "axios";
 import AlertPopup from "../../components/AlertPopup/AlertPopup";
+import { API_BASE_URL } from "../../config/api";
 
 const Cart = () => {
   const { cart, dispatch } = useCart();
@@ -97,44 +98,31 @@ const Cart = () => {
     setStep(2);
   };
 
-  const handlePayment = () => {
-    console.log("Receiver Details:", receiverDetails);
-    console.log("Card Details:", cardDetails);
-    setIsPopupOpen(false);
-    setAlert({
-      message: 'Payment Successful!',
-      type: 'success',
-      isVisible: true,
-    });
+  const handlePayment = async () => {
+    try {
+      await axios.post(`${API_BASE_URL}/api/payments`, {
+        receiverDetails,
+        cardDetails,
+      });
+      setIsPopupOpen(false);
+      setCardDetails({ cardNumber: "", expiryDate: "", cvv: "" });
+      setAlert({
+        message: "Payment Successful!",
+        type: "success",
+        isVisible: true,
+      });
 
-    window.location.reload(); // Refresh the page
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
+    } catch {
+      setAlert({
+        message: "Payment Failed! Please check details and try again.",
+        type: "error",
+        isVisible: true,
+      });
+    }
   };
-
-  // const handlePayment = async () => {
-  //   const paymentData = {
-  //     receiverDetails,
-  //     cardDetails,
-      
-  //   };
-  
-  //   try {
-  //     const response = await axios.post('/api/payment', paymentData);
-  //     console.log(response.data.message); // Show success message
-  //     setIsPopupOpen(false);
-  //     setAlert({
-  //       message: 'Payment Successful!',
-  //       type: 'success',
-  //       isVisible: true,
-  //     });
-  //   } catch (error) {
-  //     console.error('Payment failed:', error);
-  //     setAlert({
-  //       message: 'Payment Failed! Please try again.',
-  //       type: 'error',
-  //       isVisible: true,
-  //     });
-  //   }
-  // };
 
   return (
     <div className="p-6 pb-8 m-6 bg-gray-400 rounded-md shadow-md">

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { useCart } from "../Cart/CartContext";
 import { Link } from "react-router-dom";
+import { API_BASE_URL } from "../../config/api";
 
 const Market = () => {
   const { cart, dispatch } = useCart();
@@ -21,7 +22,7 @@ const Market = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/products");
+        const response = await axios.get(`${API_BASE_URL}/api/products`);
         setProducts(response.data);
         setFilteredProducts(response.data);
       } catch (err) {
@@ -83,7 +84,7 @@ const Market = () => {
         name: product.productName,
         price: product.productPrice,
         quantity: 1, // Initialize quantity to 1 for new items
-        image: `http://localhost:5000${product.imagePath}`,
+        image: `${API_BASE_URL}${product.imagePath}`,
         selected: false, // Initially unselected
       };
       dispatch({ type: "ADD_TO_CART", payload: productToAdd });
@@ -237,7 +238,7 @@ const Market = () => {
               key={product._id}            
               className="p-4 bg-gray-200 border border-gray-300 rounded-md shadow-sm hover:shadow-md hover:bg-white">
               <img
-                src={`http://localhost:5000${product.imagePath}`}
+                src={`${API_BASE_URL}${product.imagePath}`}
                 alt={product.productName}
                 className="w-full h-32 transition-transform duration-700 ease-in-out transform rounded-lg hover:scale-150"
               />

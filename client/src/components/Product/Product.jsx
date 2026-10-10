@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useDropzone } from "react-dropzone";
 import axios from "axios";
 import AlertPopup from "../AlertPopup/AlertPopup";
+import { API_BASE_URL } from "../../config/api";
 
 const Product = () => {
   const [alertMessage, setAlertMessage] = useState("");
@@ -46,8 +47,8 @@ const Product = () => {
     formData.append("image", productData.image);
 
     try {
-      const response = await axios.post(
-        "http://localhost:5000/api/products",
+      await axios.post(
+        `${API_BASE_URL}/api/products`,
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },
@@ -56,7 +57,6 @@ const Product = () => {
       setAlertMessage("Product added successfully!");
       setAlertType("success"); // Set alert type to success
       setIsAlertVisible(true);
-      console.log(response.data);
     } catch (error) {
       setAlertMessage("Error adding product. Please try again.");
       setAlertType("error"); // Set alert type to error
