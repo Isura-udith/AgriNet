@@ -1,5 +1,4 @@
 const User = require('../models/userModel');
-const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 // Register User
@@ -18,20 +17,15 @@ const registerUser = async (req, res) => {
       return res.status(400).json({ message: 'User already exists.' });
     }
 
-    // Hash the password before saving the user
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
-
-    // Create a new user
+    // Create a new user (password is securely hashed via pre-save hook in userModel)
     const user = new User({
       name,
       email,
-      phone: phone || '', // Optional field
-      idNumber: idNumber || '', // Optional field
-      address: address || '', // Optional field
-      password: hashedPassword,
-      province: province || '', // Optional field
+      phone: phone || '',
+      idNumber: idNumber || '',
+      address: address || '',
+      password,
+      province: province || '',
       role,
     });
 
@@ -39,7 +33,7 @@ const registerUser = async (req, res) => {
     await user.save();
     res.status(201).json({ message: 'User registered successfully!' });
   } catch (error) {
-    console.error('Error during user registration:', error);
+    console.error('Error during user registration:', error.message);
     res.status(500).json({ message: 'Server error. Please try again later.' });
   }
 };
@@ -60,15 +54,8 @@ const loginUser = async (req, res) => {
       return res.status(404).json({ message: 'User not found.' });
     }
 
-    // Log the entered password and the stored password hash
-    console.log('Entered password:', password);
-    console.log('Stored password hash:', user.password);
-
-
-    // Compare the entered password with the hashed password stored in the database
-    const isPasswordValid = await bcrypt.compare(password.trim(), user.password);
-
-   // const isPasswordValid = await bcrypt.compare(password, user.password);
+    // Securely compare the entered password with the hashed password
+    const isPasswordValid = await user.matchPassword(password.trim());
     if (!isPasswordValid) {
       return res.status(401).json({ message: 'Invalid password.' });
     }
@@ -92,10 +79,9 @@ const loginUser = async (req, res) => {
       token,
     });
   } catch (error) {
-    console.error('Error during user login:', error);
+    console.error('Error during user login:', error.message);
     res.status(500).json({ message: 'Server error. Please try again later.' });
   }
 };
-
 
 module.exports = { registerUser, loginUser };
