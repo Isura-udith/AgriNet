@@ -9,10 +9,7 @@ const productRoutes = require('./routes/productRoutes'); // Product routes
 const { notFound, errorHandler } = require('./middleware/errorMiddleware');
 const cartRoutes = require("./routes/cartRoutes");
 const paymentRoutes = require('./routes/paymentRoutes');
-// const router = require('./routes/userRoutes');
-// const User = require('./models/userModel');
 
-// Load environment variables from .env file
 dotenv.config();
 
 // Create an Express app instance
@@ -37,29 +34,6 @@ app.use('/api/users', userRoutes); // User-related routes
 app.use('/api/products', productRoutes); // Product routes (handled by productRoutes)
 app.use("/api/cart", cartRoutes);
 app.use('/api/payments', paymentRoutes);
-
-// router.get('/', async (req, res) => {
-//   try {
-//     // Get the role query parameter (e.g., ?role=seller)
-//     const { role } = req.query;
-
-//     // If a role is provided, filter users by role; otherwise, fetch all users
-//     const filter = role ? { role } : {};
-
-//     const users = await User.find(filter);
-
-//     // Check if any users are found
-//     if (users.length === 0) {
-//       return res.status(404).json({ message: 'No users found.' });
-//     }
-
-//     res.status(200).json(users);
-//   } catch (error) {
-//     console.error('Error fetching users:', error);
-//     res.status(500).json({ message: 'Error fetching users' });
-//   }
-// });
-
 
 app.get('/', (req, res) => {
   res.send('API is running...');
